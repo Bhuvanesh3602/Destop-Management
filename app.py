@@ -3,31 +3,15 @@ import speech_to_text
 import text_to_speech
 import action as a
 import datetime
-import time
 
 try:
     from tkinter import *
-    from tkinter import ttk, messagebox
-    from PIL import Image, ImageTk
+    from tkinter import messagebox
     GUI_AVAILABLE = True
 except ModuleNotFoundError:
     GUI_AVAILABLE = False
 
 is_listening = False
-
-def animate_status():
-    colors = ["#00ff88", "#00dd77", "#00bb66", "#00dd77"]
-    idx = 0
-    while True:
-        if is_listening:
-            status_dot.config(fg=colors[idx % len(colors)])
-            status_label.config(text="🎤 Listening...", fg=colors[idx % len(colors)])
-        else:
-            status_dot.config(fg="#00ff88")
-            status_label.config(text="✓ Online & Ready", fg="#00ff88")
-        idx += 1
-        time.sleep(0.3)
-        root.update()
 
 def update_time():
     current = datetime.datetime.now().strftime("%I:%M:%S %p")
@@ -36,11 +20,9 @@ def update_time():
 
 def on_enter(e, btn, hover_color):
     btn['background'] = hover_color
-    btn['font'] = ("Segoe UI", 12, "bold")
 
 def on_leave(e, btn, original_color):
     btn['background'] = original_color
-    btn['font'] = ("Segoe UI", 11, "bold")
 
 def ask_action():
     user_msg = entry.get().strip()
@@ -72,6 +54,7 @@ def mic_action():
     global is_listening
     if GUI_AVAILABLE:
         is_listening = True
+        status_label.config(text="🎤 Listening...", fg="#ff79a8")
         text.config(state=NORMAL)
         text.insert(END, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n", "separator")
         text.insert(END, "🎙️ Listening... Speak now!\n", "system")
@@ -85,6 +68,7 @@ def listen_and_respond():
     global is_listening
     data = speech_to_text.recognize_speech_from_mic()
     is_listening = False
+    status_label.config(text="✓ Online & Ready", fg="#00ff88")
     text.config(state=NORMAL)
     text.insert(END, "👤 You (mic): ", "user_label")
     text.insert(END, data + "\n", "user")
@@ -102,8 +86,10 @@ def show_help():
 • Say 'Search Python'
 • Say 'Open Calculator'
 • Say 'What is the date?'
+• Say 'Battery status'
+• Say 'CPU usage'
     
-Press MIC button and speak!"""
+Press VOICE button and speak!"""
     messagebox.showinfo("Help - Voice Commands", help_text)
 
 def show_about():
@@ -125,13 +111,14 @@ Developed with ❤️ using Python"""
 if GUI_AVAILABLE:
     root = Tk()
     root.title("🤖 AI Desktop Assistant Pro")
-    root.geometry("900x850")
+    root.geometry("950x900")
     root.resizable(False, False)
     root.config(bg="#0a0a0f")
 
     # Top Menu Bar
     menu_bar = Frame(root, bg="#1a1a2e", height=40)
     menu_bar.pack(fill=X)
+    menu_bar.pack_propagate(False)
     
     menu_label = Label(menu_bar, text="☰ MENU", font=("Segoe UI", 10, "bold"), 
                       fg="#00d4ff", bg="#1a1a2e", cursor="hand2")
@@ -154,6 +141,7 @@ if GUI_AVAILABLE:
     # Header Frame
     header_frame = Frame(root, bg="#1a1a2e", height=100)
     header_frame.pack(fill=X)
+    header_frame.pack_propagate(False)
     
     title_label = Label(header_frame, text="🤖 AI ASSISTANT PRO", 
                        font=("Segoe UI", 32, "bold"), fg="#00d4ff", bg="#1a1a2e")
@@ -166,6 +154,7 @@ if GUI_AVAILABLE:
     # Status Bar
     status_frame = Frame(root, bg="#16213e", height=40)
     status_frame.pack(fill=X, pady=5)
+    status_frame.pack_propagate(False)
     
     status_dot = Label(status_frame, text="●", font=("Arial", 16), fg="#00ff88", bg="#16213e")
     status_dot.pack(side=LEFT, padx=20)
@@ -178,13 +167,10 @@ if GUI_AVAILABLE:
                          font=("Segoe UI", 9), fg="#666666", bg="#16213e")
     version_label.pack(side=RIGHT, padx=20)
 
-    # Chat Container
-    chat_container = Frame(root, bg="#0a0a0f")
-    chat_container.pack(padx=25, pady=10, fill=BOTH, expand=True)
-    
     # Chat Display Frame
-    chat_frame = Frame(chat_container, bg="#16213e", bd=2, relief=RIDGE)
-    chat_frame.pack(fill=BOTH, expand=True)
+    chat_frame = Frame(root, bg="#16213e", bd=2, relief=RIDGE, height=400)
+    chat_frame.pack(padx=25, pady=10, fill=BOTH)
+    chat_frame.pack_propagate(False)
     
     scrollbar = Scrollbar(chat_frame, bg="#1a1a2e", troughcolor="#0f0f1e", width=15)
     scrollbar.pack(side=RIGHT, fill=Y)
@@ -204,66 +190,66 @@ if GUI_AVAILABLE:
     text.tag_config("separator", foreground="#333333")
     
     text.insert(END, "🤖 Welcome to AI Assistant Pro!\n", "assistant")
-    text.insert(END, "Type a message or click MIC to speak...\n\n", "system")
+    text.insert(END, "Type a message or click VOICE to speak...\n\n", "system")
     text.config(state=DISABLED)
 
-    # Input Container
-    input_container = Frame(root, bg="#0a0a0f")
-    input_container.pack(padx=25, pady=10, fill=X)
-    
-    input_frame = Frame(input_container, bg="#1a1a2e", bd=2, relief=RIDGE)
-    input_frame.pack(fill=X)
+    # Input Frame
+    input_frame = Frame(root, bg="#1a1a2e", bd=2, relief=RIDGE, height=60)
+    input_frame.pack(padx=25, pady=5, fill=X)
+    input_frame.pack_propagate(False)
     
     entry = Entry(input_frame, font=("Segoe UI", 13), bg="#1a1a2e", fg="#ffffff", 
                  insertbackground="#00d4ff", bd=0, relief=FLAT)
-    entry.pack(fill=X, ipady=15, padx=15, pady=10)
+    entry.pack(fill=BOTH, expand=True, padx=15, pady=10)
     entry.bind('<Return>', lambda e: send_action())
     entry.focus()
 
-    # Button Container
-    button_container = Frame(root, bg="#0a0a0f")
-    button_container.pack(pady=15)
+    # Button Frame
+    button_frame = Frame(root, bg="#0a0a0f", height=80)
+    button_frame.pack(padx=25, pady=10, fill=X)
+    button_frame.pack_propagate(False)
     
-    # Row 1 Buttons
-    btn_row1 = Frame(button_container, bg="#0a0a0f")
-    btn_row1.pack(pady=5)
+    # Center the buttons
+    btn_container = Frame(button_frame, bg="#0a0a0f")
+    btn_container.place(relx=0.5, rely=0.5, anchor=CENTER)
     
     btn_style = {
-        "font": ("Segoe UI", 11, "bold"),
+        "font": ("Segoe UI", 12, "bold"),
         "cursor": "hand2",
         "bd": 0,
         "relief": FLAT,
-        "width": 14,
+        "width": 15,
         "height": 2
     }
     
-    btn_send = Button(btn_row1, text="📤 SEND", bg="#00b894", fg="white", 
+    btn_send = Button(btn_container, text="📤 SEND", bg="#00b894", fg="white", 
                      command=send_action, activebackground="#00a383", **btn_style)
-    btn_send.grid(row=0, column=0, padx=10)
+    btn_send.grid(row=0, column=0, padx=8)
     btn_send.bind("<Enter>", lambda e: on_enter(e, btn_send, "#00a383"))
     btn_send.bind("<Leave>", lambda e: on_leave(e, btn_send, "#00b894"))
     
-    btn_mic = Button(btn_row1, text="🎤 VOICE", bg="#fd79a8", fg="white", 
+    btn_mic = Button(btn_container, text="🎤 VOICE", bg="#fd79a8", fg="white", 
                     command=mic_action, activebackground="#fc5c8d", **btn_style)
-    btn_mic.grid(row=0, column=1, padx=10)
+    btn_mic.grid(row=0, column=1, padx=8)
     btn_mic.bind("<Enter>", lambda e: on_enter(e, btn_mic, "#fc5c8d"))
     btn_mic.bind("<Leave>", lambda e: on_leave(e, btn_mic, "#fd79a8"))
     
-    btn_delete = Button(btn_row1, text="🗑️ CLEAR", bg="#ff7675", fg="white", 
+    btn_delete = Button(btn_container, text="🗑️ CLEAR", bg="#ff7675", fg="white", 
                        command=delete_text, activebackground="#ff5e5e", **btn_style)
-    btn_delete.grid(row=0, column=2, padx=10)
+    btn_delete.grid(row=0, column=2, padx=8)
     btn_delete.bind("<Enter>", lambda e: on_enter(e, btn_delete, "#ff5e5e"))
     btn_delete.bind("<Leave>", lambda e: on_leave(e, btn_delete, "#ff7675"))
     
-    btn_help = Button(btn_row1, text="❓ HELP", bg="#6c5ce7", fg="white", 
+    btn_help = Button(btn_container, text="❓ HELP", bg="#6c5ce7", fg="white", 
                      command=show_help, activebackground="#5f4dd1", **btn_style)
-    btn_help.grid(row=0, column=3, padx=10)
+    btn_help.grid(row=0, column=3, padx=8)
     btn_help.bind("<Enter>", lambda e: on_enter(e, btn_help, "#5f4dd1"))
     btn_help.bind("<Leave>", lambda e: on_leave(e, btn_help, "#6c5ce7"))
 
     # Footer
     footer_frame = Frame(root, bg="#1a1a2e", height=35)
     footer_frame.pack(fill=X, side=BOTTOM)
+    footer_frame.pack_propagate(False)
     
     footer_label = Label(footer_frame, text="⚡ Powered by Python | 🎤 Voice Enabled | 🔒 100% Local", 
                         font=("Segoe UI", 9), fg="#666666", bg="#1a1a2e")
